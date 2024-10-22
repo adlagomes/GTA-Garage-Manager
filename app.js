@@ -3,6 +3,7 @@ const vehicleList = document.querySelector('[data-list="vehicle-list"]')
 const nameInput = document.querySelector('[data-input="name"]')
 const modelInput = document.querySelector('[data-input="model"]')
 const garageInput = document.querySelector('[data-input="garage"]')
+const showVehiclesButton = document.querySelector('[data-button="show-vehicle-button"]')
 
 class Veiculo {
   constructor(nome, modelo, garagem) {
@@ -31,4 +32,9 @@ form.addEventListener('submit', (e) => {
   adicionarVeiculoAoDOM(veiculo)
 
   form.reset()
+})
+
+showVehiclesButton.addEventListener('click', () => {
+  vehicleList.classList.toggle('hidden')
+  showVehiclesButton.textContent = vehicleList.classList.contains('hidden') ? 'Mostrar Veículos' : 'Ocultar Veículos'
 })
