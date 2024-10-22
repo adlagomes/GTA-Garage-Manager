@@ -16,14 +16,14 @@ class Veiculo {
   }
 }
 
-let veiculos = []
+let garagens = {}
 
 const adicionarVeiculoAoDOM = (veiculo) => {
   const vehicleDiv = document.createElement('div')
   vehicleDiv.className ='vehicle'
   vehicleDiv.innerHTML = `
     <h3>${veiculo.nome}</h3>
-    <p>${veiculo.modelo}</p>
+    <p>Modelo: ${veiculo.modelo}</p>
     <p>Guardado em: ${veiculo.garagem}</p>
   `
   vehicleList.appendChild(vehicleDiv)
@@ -35,7 +35,16 @@ const handleFormSubmit = (e) => {
   const modelo = modelInput.value
   const garagem = garageInput.value
   const veiculo = new Veiculo(nome, modelo, garagem)
-  veiculos.push(veiculo)
+
+  if(!garagens[garagem]) {
+    garagens[garagem] = []
+    console.log(`Nova garagem criada: ${garagem}`)
+  }
+
+  garagens[garagem].push(veiculo)
+  console.log(`Veículo adicionado à garagem ${garagem}:`, veiculo)
+  console.log('Estado atual das garagens:', garagens)
+
   adicionarVeiculoAoDOM(veiculo)
   form.reset()
 }
@@ -47,11 +56,15 @@ const toggleVehicleList = () => {
 
 const buscarVeiculos = () => {
   const termo = searchInput.value.toLowerCase()
-  const resultados = veiculos.filter(veiculo => {
-    const nomeVeiculo = veiculo.nome.toLowerCase().includes(termo)
-    const nomeGaragem = veiculo.garagem.toLowerCase().includes(termo)
-    return nomeVeiculo || nomeGaragem;
-  })
+  const resultados = []
+
+  for (let garagem in garagens) {
+    resultados.push(...garagens[garagem].filter(veiculo => {
+      const nomeVeiculo = veiculo.nome.toLowerCase().includes(termo)
+      const nomeGaragem = veiculo.garagem.toLowerCase().includes(termo)
+      return nomeVeiculo || nomeGaragem;
+    }))
+  }
 
   searchResults.innerHTML = ''
   searchResults.style.display = 'block'
@@ -70,6 +83,7 @@ const buscarVeiculos = () => {
   } else {
     searchResults.innerHTML = '<p>Nenhum veículo ou garagem encontrado</p>'
   }
+  searchInput.value = ''
 }
 
 form.addEventListener('submit', handleFormSubmit)
