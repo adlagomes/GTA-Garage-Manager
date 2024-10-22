@@ -19,14 +19,23 @@ class Veiculo {
 let garagens = {}
 
 const adicionarVeiculoAoDOM = (veiculo) => {
+  let garageDiv = document.querySelector(`#garagem-${veiculo.garagem.replace(/\s+/g, '')}`)
+
+  if (!garageDiv) {
+    garageDiv = document.createElement('div')
+    garageDiv.className = 'garagem'
+    garageDiv.id = `garagem-${veiculo.garagem.replace(/\s+/g, '')}`
+    garageDiv.innerHTML = `<h3>${veiculo.garagem}</h3>`
+    vehicleList.appendChild(garageDiv)
+  }
   const vehicleDiv = document.createElement('div')
   vehicleDiv.className ='vehicle'
   vehicleDiv.innerHTML = `
-    <h3>${veiculo.nome}</h3>
+    <p>${veiculo.nome}</p>
     <p>Modelo: ${veiculo.modelo}</p>
-    <p>Guardado em: ${veiculo.garagem}</p>
+    
   `
-  vehicleList.appendChild(vehicleDiv)
+  garageDiv.appendChild(vehicleDiv)
 }
 
 const handleFormSubmit = (e) => {
@@ -38,12 +47,9 @@ const handleFormSubmit = (e) => {
 
   if(!garagens[garagem]) {
     garagens[garagem] = []
-    console.log(`Nova garagem criada: ${garagem}`)
   }
 
   garagens[garagem].push(veiculo)
-  console.log(`Veículo adicionado à garagem ${garagem}:`, veiculo)
-  console.log('Estado atual das garagens:', garagens)
 
   adicionarVeiculoAoDOM(veiculo)
   form.reset()

@@ -27,9 +27,41 @@ button {
 }
 
 #vehicle-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 20px;
 }
 
 .hidden {
   display: none;
+}
+
+/* Estilo de cada garagem */
+.garagem {
+  border: 1px solid #3B3B3B;
+  padding: 10px;
+  margin: 5px;
+}
+
+/* Título da garagem */
+.garagem h3 {
+  background-color: #6a829c;
+  color: white;
+  padding: 5px;
+  margin: 0;
+  text-align: center;
+}
+
+/* Estilo dos veículos */
+.vehicle {
+  background-color: #F0F0F0;
+  margin-top: 5px;
+  padding: 5px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.vehicle p:first-child {
+  background-color: #d3d3d3;
 }
