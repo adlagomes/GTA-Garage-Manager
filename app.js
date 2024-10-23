@@ -1,5 +1,5 @@
 import { auth, db } from './firebase-config.js';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const loginForm = document.querySelector('#login-form')
@@ -21,6 +21,7 @@ const showVehiclesButton = document.querySelector('[data-button="show-vehicle-bu
 const searchInput = document.querySelector('[data-input="search-input"]')
 const searchButton = document.querySelector('[data-button="search-button"]')
 const searchResults = document.querySelector('[data-list="vehicle-search-list"]')
+const logoutButton = document.querySelector('#logout-button');
 
 // Mostra e oculta formulários de login e registro
 showRegister.addEventListener('click', (e) => {
@@ -46,10 +47,26 @@ loginForm.addEventListener('submit', async (e) => {
     loginContainer.classList.add('hidden')
     form.classList.remove('hidden')
     showVehiclesButton.classList.remove('hidden')
+    logoutButton.classList.remove('hidden');
   }catch(error) {
     console.error('Erro ao fazer login:', error)
     alert('Erro ao fazer login. Verifique suas credenciais e tente novamente.')
   }
+})
+
+// Logout de usuário
+logoutButton.addEventListener('click', async (e) => {
+  try {
+    await signOut(auth);
+    form.classList.add('hidden')
+    showVehiclesButton.classList.add('hidden')
+    loginContainer.classList.remove('hidden')
+    logoutButton.classList.add('hidden'); // Ocultar botão de logout
+  } catch (error) {
+    console.error('Erro ao deslogar:', error);
+  }
+  loginForm.reset()
+  // registerForm.reset()
 })
 
 // Registro de usuário
@@ -63,6 +80,7 @@ registerForm.addEventListener('submit', async (e) => {
     registerContainer.classList.add('hidden')
     form.classList.remove('hidden')
     showVehiclesButton.classList.remove('hidden')
+    logoutButton.classList.remove('hidden')
   } catch (error) {
     console.error('Erro ao registrar:', error);
     alert('Erro ao registrar. Verifique suas informações e tente novamente.')

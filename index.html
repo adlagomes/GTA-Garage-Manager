@@ -29,20 +29,21 @@
     <p>Já tem uma conta? <a href="#" id="show-login">Faça login</a></p>
   </div>
 
-  <form data-form="vehicle-form">
+  <form data-form="vehicle-form" class="hidden">
     <input type="text" data-input="name" placeholder="Nome do Veículo" required>
     <input type="text" data-input="model" placeholder="Modelo do Veículo" required>
     <input type="text" data-input="garage" placeholder="Garagem" required>
     <button type="submit">Adicionar Veículo</button>
   </form>
+  <button id="logout-button" class="hidden">Sair</button>
 
-  <div class="search-section">
+  <div class="search-section hidden">
     <input type="text" data-input="search-input" placeholder="O que você está procurando?">
     <button data-button="search-button">Buscar</button>
     <div data-list="vehicle-search-list" style="display: none;"></div>
   </div>
 
-  <button data-button="show-vehicle-button">Mostrar Veículos</button>
+  <button data-button="show-vehicle-button" class="hidden">Mostrar Veículos</button>
   <div data-list="vehicle-list" class="hidden"></div>
   
 <!-- Script Firebase -->

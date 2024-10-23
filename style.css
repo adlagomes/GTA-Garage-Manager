@@ -26,6 +26,13 @@ button {
   cursor: pointer;
 }
 
+#logout-button {
+  background-color: #FF4D4D;
+  color: white;
+  border: none;
+  margin-top: 20px;
+}
+
 #vehicle-list {
   display: flex;
   flex-wrap: wrap;
