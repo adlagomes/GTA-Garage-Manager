@@ -8,6 +8,27 @@
 </head>
 <body>
   <h1>GTA Garage Manager</h1>
+
+  <div id="login-container">
+    <h2>Login</h2>
+    <form id="login-form">
+      <input type="email" id="login-email" placeholder="Email" required>
+      <input type="password" id="login-password" placeholder="Senha" required>
+      <button type="submit">Entrar</button>
+    </form>
+    <p>Não tem uma conta? <a href="#" id="show-register">Registre-se</a></p>
+  </div>
+
+  <div id="register-container" class="hidden">
+    <h2>Registro</h2>
+    <form id="register-form">
+      <input type="email" id="register-email" placeholder="Registrar email" required>
+      <input type="password" id="register-password" placeholder="Registrar senha" required>
+      <button type="submit">Registrar</button>
+    </form>
+    <p>Já tem uma conta? <a href="#" id="show-login">Faça login</a></p>
+  </div>
+
   <form data-form="vehicle-form">
     <input type="text" data-input="name" placeholder="Nome do Veículo" required>
     <input type="text" data-input="model" placeholder="Modelo do Veículo" required>
@@ -23,7 +44,9 @@
 
   <button data-button="show-vehicle-button">Mostrar Veículos</button>
   <div data-list="vehicle-list" class="hidden"></div>
-
-  <script src="app.js"></script>
+  
+<!-- Script Firebase -->
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -1,3 +1,17 @@
+import { auth, db } from './firebase-config.js';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+const loginForm = document.querySelector('#login-form')
+const registerForm = document.querySelector('#register-form')
+const loginContainer = document.querySelector('#login-container')
+const registerContainer = document.querySelector('#register-container')
+const showRegister = document.querySelector('#show-register')
+const showLogin = document.querySelector('#show-login')
+const loginEmail = document.querySelector('#login-email')
+const loginPassword = document.querySelector('#login-password')
+const registerEmail = document.querySelector('#register-email')
+const registerPassword = document.querySelector('#register-password')
 const form = document.querySelector('[data-form="vehicle-form"]')
 const vehicleList = document.querySelector('[data-list="vehicle-list"]')
 const nameInput = document.querySelector('[data-input="name"]')
@@ -8,6 +22,53 @@ const searchInput = document.querySelector('[data-input="search-input"]')
 const searchButton = document.querySelector('[data-button="search-button"]')
 const searchResults = document.querySelector('[data-list="vehicle-search-list"]')
 
+// Mostra e oculta formulários de login e registro
+showRegister.addEventListener('click', (e) => {
+  e.preventDefault()
+  loginContainer.classList.add('hidden')
+  registerContainer.classList.remove('hidden')
+})
+
+showLogin.addEventListener('click', (e) => {
+  e.preventDefault()
+  registerContainer.classList.add('hidden')
+  loginContainer.classList.remove('hidden')
+})
+
+// Login de usuário
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault()
+  const email = loginEmail.value
+  const password = loginPassword.value
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password)
+    console.log('Usuário logado:', userCredential)
+    loginContainer.classList.add('hidden')
+    form.classList.remove('hidden')
+    showVehiclesButton.classList.remove('hidden')
+  }catch(error) {
+    console.error('Erro ao fazer login:', error)
+    alert('Erro ao fazer login. Verifique suas credenciais e tente novamente.')
+  }
+})
+
+// Registro de usuário
+registerForm.addEventListener('submit', async (e) => {
+  e.preventDefault()
+  const email = registerEmail.value
+  const password = registerPassword.value
+  try{
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+    console.log('Usuario registrado', userCredential.user);
+    registerContainer.classList.add('hidden')
+    form.classList.remove('hidden')
+    showVehiclesButton.classList.remove('hidden')
+  } catch (error) {
+    console.error('Erro ao registrar:', error);
+    alert('Erro ao registrar. Verifique suas informações e tente novamente.')
+  }
+})
+
 class Veiculo {
   constructor(nome, modelo, garagem) {
     this.nome = nome
@@ -16,8 +77,7 @@ class Veiculo {
   }
 }
 
-let garagens = {}
-
+// Adiciona veiculos ao DOM e Firestore
 const adicionarVeiculoAoDOM = (veiculo) => {
   let garageDiv = document.querySelector(`#garagem-${veiculo.garagem.replace(/\s+/g, '')}`)
 
@@ -33,64 +93,111 @@ const adicionarVeiculoAoDOM = (veiculo) => {
   vehicleDiv.innerHTML = `
     <p>${veiculo.nome}</p>
     <p>Modelo: ${veiculo.modelo}</p>
-    
   `
   garageDiv.appendChild(vehicleDiv)
 }
 
-const handleFormSubmit = (e) => {
+// Lida com envio de formulário
+const handleFormSubmit = async (e) => {
   e.preventDefault()
   const nome = nameInput.value
   const modelo = modelInput.value
   const garagem = garageInput.value
   const veiculo = new Veiculo(nome, modelo, garagem)
 
-  if(!garagens[garagem]) {
-    garagens[garagem] = []
+  try {
+    const garagemRef = collection(db, 'garagens', garagem, 'veiculos')
+    const docRef = await addDoc(garagemRef, {
+      nome: nome,
+      modelo: modelo,
+      garagem: garagem,
+      userId: auth.currentUser.uid
+    })
+    console.log('veiculo adicionado com ID:', docRef.id)
+    adicionarVeiculoAoDOM(veiculo)
+  } catch (error) {
+    console.error('Erro ao adicionar o veiculo:', error);
   }
-
-  garagens[garagem].push(veiculo)
-
-  adicionarVeiculoAoDOM(veiculo)
-  form.reset()
+form.reset()
 }
 
+// Alterna a exibição da lista de veículos
 const toggleVehicleList = () => {
   vehicleList.classList.toggle('hidden')
   showVehiclesButton.textContent = vehicleList.classList.contains('hidden') ? 'Mostrar Veículos' : 'Ocultar Veículos'
 }
 
-const buscarVeiculos = () => {
+// Busca veículos pelo termo fornecido
+const buscarVeiculos = async () => {
   const termo = searchInput.value.toLowerCase()
-  const resultados = []
-
-  for (let garagem in garagens) {
-    resultados.push(...garagens[garagem].filter(veiculo => {
-      const nomeVeiculo = veiculo.nome.toLowerCase().includes(termo)
-      const nomeGaragem = veiculo.garagem.toLowerCase().includes(termo)
-      return nomeVeiculo || nomeGaragem;
-    }))
-  }
-
   searchResults.innerHTML = ''
   searchResults.style.display = 'block'
 
-  if(resultados.length > 0) {
-    resultados.forEach(veiculo => {
-      const vehicleDiv = document.createElement('div')
-      vehicleDiv.className = 'vehicle'
-      vehicleDiv.innerHTML = `
-        <h3>${veiculo.nome}</h3>
-        <p>Modelo: ${veiculo.modelo}</p>
-        <p>Garagem: ${veiculo.garagem}</p>
-      `
-      searchResults.appendChild(vehicleDiv)
-    })
-  } else {
-    searchResults.innerHTML = '<p>Nenhum veículo ou garagem encontrado</p>'
+  try {
+    const garagensSnapshot = await db.collection('garagens').get();
+    const resultados = [];
+
+    for (const doc of garagensSnapshot.docs) {
+      const garagem = doc.id;
+      const veiculosSnapshot = await db.collection('garagens').doc(garagem).collection('veiculos').get();
+
+      for (const subDoc of veiculosSnapshot.docs) {
+        const veiculo = subDoc.data();
+        if (veiculo.nome.toLowerCase().includes(termo) || veiculo.garagem.toLowerCase().includes(termo)) {
+          resultados.push(veiculo);
+        }
+      }
+    }
+    if(resultados.length > 0) {
+      resultados.forEach(veiculo => {
+        const vehicleDiv = document.createElement('div');
+        vehicleDiv.className = 'vehicle';
+        vehicleDiv.innerHTML = `          <h3>${veiculo.nome}</h3>          <p>Modelo: ${veiculo.modelo}</p>          <p>Garagem: ${veiculo.garagem}</p>        `;
+        searchResults.appendChild(vehicleDiv);
+      });
+    } else {
+      searchResults.innerHTML = '<p>Nenhum veículo ou garagem encontrado</p>';
+    }
+  } catch (error) {
+    console.error('Erro ao buscar veículos:', error);
+    searchResults.innerHTML = '<p>Erro ao buscar veículos</p>';
   }
-  searchInput.value = ''
-}
+  searchInput.value = '';
+  // db.collection('garagens').get().then(snapshot => {
+  //   snapshot.forEach(doc => {
+  //     const garagem = doc.id
+  //     db.collection('garagens').doc(garagem).collection('veiculos').get().then(subSnapshot => {
+  //       const resultados = []
+  //       subSnapshot.forEach(subDoc => {
+  //         const veiculo = subDoc.data()
+  //         if(veiculo.nome.toLowerCase().includes(termo) || veiculo.garagem.toLowerCase().includes(termo)) {
+  //           resultados.push(veiculo)
+  //         }
+  //       })
+  //       if(resultados.length > 0){
+  //         resultados.forEach(veiculo => {
+  //           const vehicleDiv = document.createElement('div');
+  //           vehicleDiv.className = 'vehicle';
+  //           vehicleDiv.innerHTML = `
+  //             <h3>${veiculo.nome}</h3>
+  //             <p>Modelo: ${veiculo.modelo}</p>
+  //             <p>Garagem: ${veiculo.garagem}</p>
+  //           `;
+  //           searchResults.appendChild(vehicleDiv);
+  //         });
+  //       } else {
+  //         searchResults.innerHTML = '<p>Nenhum veículo ou garagem encontrado</p>';
+  //       }
+  //     })
+  //   });
+  // }).catch(error => {
+  //   console.error('Erro ao buscar veículos:', error);
+  //   searchResults.innerHTML = '<p>Erro ao buscar veículos</p>';
+  // });
+  // searchInput.value = '';
+};
+
+
 
 form.addEventListener('submit', handleFormSubmit)
 showVehiclesButton.addEventListener('click', toggleVehicleList)
